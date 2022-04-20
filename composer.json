@@ -1,0 +1,19 @@
+{
+    "name": "webchemistry/data-view",
+    "require": {
+        "php": ">= 8.1",
+        "nette/utils": "^3.2",
+        "nette/application": "^3.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "WebChemistry\\DataView\\": "src"
+        }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.5",
+        "doctrine/orm": "^2.12",
+        "nette/di": "^3.0",
+        "latte/latte": "^2.11"
+    }
+}
