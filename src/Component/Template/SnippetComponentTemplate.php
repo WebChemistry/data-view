@@ -12,4 +12,7 @@ final class SnippetComponentTemplate extends Template
 
 	public string $name;
 
+	/** @var array<string, string> */
+	public array $attributes = [];
+
 }
