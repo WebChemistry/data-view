@@ -19,6 +19,9 @@ final class SnippetComponent extends BaseViewComponent
 		'naja-prepend' => __DIR__ . '/templates/snippet/naja-prepend.latte',
 	];
 
+	/** @var array<string, string> */
+	private array $attributes = [];
+
 	public function __construct(
 		private Control $control,
 		private string $file = __DIR__ . '/templates/snippet/default.latte',
@@ -42,8 +45,16 @@ final class SnippetComponent extends BaseViewComponent
 		$template = $this->createTemplate();
 		$template->setFile($this->file);
 		$template->name = 'snippet';
+		$template->attributes = $this->attributes;
 
 		$template->render();
+	}
+
+	public function setAttribute(string $name, string $value): static
+	{
+		$this->attributes[$name] = $value;
+
+		return $this;
 	}
 
 	public function redraw(): void
