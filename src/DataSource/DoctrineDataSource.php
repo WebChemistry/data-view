@@ -19,12 +19,7 @@ final class DoctrineDataSource implements DataSource
 	/** @var mixed[] */
 	private array $options;
 
-	/** @var Paginator<T> */
-	private Paginator $paginator;
-
 	private bool $compositeId;
-
-	private int $count;
 
 	/**
 	 * @param mixed[] $options
@@ -45,34 +40,30 @@ final class DoctrineDataSource implements DataSource
 	 */
 	public function getDataSet(DataViewComponent $dataViewComponent): DataSet
 	{
-		$this->count ??= $this->getPaginator()->count();
+		$paginator = $this->createPaginator();
 
 		return new DataSet(
-			$this->count,
-			$this->getPaginator()->getIterator(),
+			$paginator->count(),
+			$paginator->getIterator(),
 		);
 	}
 
 	/**
 	 * @return Paginator<T>
 	 */
-	protected function getPaginator(): Paginator
+	protected function createPaginator(): Paginator
 	{
-		if (!isset($this->paginator)) {
-			/** @phpstan-var string|AbstractQuery::HYDRATE_* $hydrateMode */
-			$hydrateMode = $this->options['hydrationMode'];
+		/** @phpstan-var string|AbstractQuery::HYDRATE_* $hydrateMode */
+		$hydrateMode = $this->options['hydrationMode'];
 
-			$query = $this->queryBuilder->getQuery()
-				->setHydrationMode($hydrateMode);
+		$query = $this->queryBuilder->getQuery()
+			->setHydrationMode($hydrateMode);
 
-			$fetchJoinCollection = $this->options['fetchJoinCollection'] === null ? !$this->isCompositeId() :
-				(bool) $this->options['fetchJoinCollection'];
+		$fetchJoinCollection = $this->options['fetchJoinCollection'] === null ? !$this->isCompositeId() :
+			(bool) $this->options['fetchJoinCollection'];
 
-			$this->paginator = new Paginator($query, $fetchJoinCollection);
-			$this->paginator->setUseOutputWalkers((bool) $this->options['outputWalkers']);
-		}
-
-		return $this->paginator;
+		return (new Paginator($query, $fetchJoinCollection))
+			->setUseOutputWalkers((bool) $this->options['outputWalkers']);
 	}
 
 	protected function isCompositeId(): bool
