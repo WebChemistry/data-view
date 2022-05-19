@@ -6,9 +6,13 @@ use Nette\Bridges\ApplicationLatte\Template;
 use WebChemistry\DataView\Component\Object\Switcher;
 use WebChemistry\DataView\Component\SwitcherComponent;
 
+/**
+ * @template T
+ */
 final class SwitcherComponentTemplate extends Template
 {
 
+	/** @var SwitcherComponent<T> */
 	public SwitcherComponent $control;
 
 	/** @var Switcher[] */

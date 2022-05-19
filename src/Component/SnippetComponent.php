@@ -41,7 +41,7 @@ final class SnippetComponent extends BaseViewComponent
 
 	public function render(): void
 	{
-		/** @var SnippetComponentTemplate $template */
+		/** @var SnippetComponentTemplate<T> $template */
 		$template = $this->createTemplate();
 		$template->setFile($this->file);
 		$template->name = 'snippet';

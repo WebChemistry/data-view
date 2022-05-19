@@ -45,7 +45,7 @@ final class SwitcherComponent extends BaseViewComponent
 
 	public function render(): void
 	{
-		/** @var SwitcherComponentTemplate $template */
+		/** @var SwitcherComponentTemplate<T> $template */
 		$template = $this->createTemplate(SwitcherComponentTemplate::class);
 		$template->setFile(__DIR__ . '/templates/switcher/default.latte');
 		$template->switchers = $this->switchers;

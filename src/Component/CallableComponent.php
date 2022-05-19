@@ -31,7 +31,7 @@ final class CallableComponent extends BaseViewComponent
 
 	public function render(): void
 	{
-		/** @var CallableComponentTemplate $template */
+		/** @var CallableComponentTemplate<T> $template */
 		$template = $this->createTemplate();
 		$template->setFile(__DIR__ . '/templates/callable/default.latte');
 		$template->name = 'callable';
