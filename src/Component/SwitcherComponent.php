@@ -23,6 +23,16 @@ final class SwitcherComponent extends BaseViewComponent
 	/** @var Switcher[] */
 	private array $switchers = [];
 
+	/**
+	 * @param Switcher[] $switchers
+	 */
+	public function __construct(array $switchers)
+	{
+		foreach ($switchers as $switcher) {
+			$this->addSwitcher($switcher);
+		}
+	}
+
 	public function addSwitcher(Switcher $switcher): static
 	{
 		$this->switchers[$switcher->getId()] = $switcher;
