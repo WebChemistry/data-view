@@ -37,6 +37,11 @@ final class DataViewComponent extends Control
 		return $this->dataSource;
 	}
 
+	public function hasData(): bool
+	{
+		return $this->getDataSet()->hasData();
+	}
+
 	/**
 	 * @return array<array-key, T>
 	 */

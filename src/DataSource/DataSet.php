@@ -43,4 +43,9 @@ class DataSet
 		return $this->count;
 	}
 
+	public function hasData(): bool
+	{
+		return $this->count > 0;
+	}
+
 }
