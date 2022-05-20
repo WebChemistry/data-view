@@ -18,14 +18,14 @@ use WebChemistry\DataView\DataViewComponent;
 final class InjectableDataSource implements DataSource
 {
 
-	/** @var callable(): DataSource<T> */
+	/** @var callable */
 	private $callable;
 
 	/** @var mixed[] */
 	private array $autowire;
 
 	/**
-	 * @param callable(): DataSource<T> $callable
+	 * @param callable $callable
 	 */
 	public function __construct(callable $callable, mixed ... $autowire)
 	{
