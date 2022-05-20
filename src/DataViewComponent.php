@@ -30,6 +30,14 @@ final class DataViewComponent extends Control
 	}
 
 	/**
+	 * @return DataSource<T>
+	 */
+	public function getDataSource(): DataSource
+	{
+		return $this->dataSource;
+	}
+
+	/**
 	 * @return array<array-key, T>
 	 */
 	public function getData(): array
