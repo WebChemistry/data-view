@@ -86,6 +86,11 @@ final class DataViewComponent extends Control
 		$template->render();
 	}
 
+	public function renderCount(): void
+	{
+		echo $this->getDataSet()->getCount();
+	}
+
 	public function requestRedraw(Control $control): void
 	{
 		Arrays::invoke($this->onRedrawRequest, $control, $this);
