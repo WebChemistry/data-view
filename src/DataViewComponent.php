@@ -8,6 +8,7 @@ use Nette\Application\UI\Control;
 use Nette\Application\UI\Renderable;
 use Nette\ComponentModel\IComponent;
 use Nette\Utils\Arrays;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use WebChemistry\DataView\DataSource\DataSet;
 use WebChemistry\DataView\DataSource\DataSource;
 use WebChemistry\DataView\Render\RenderCollection;
@@ -22,11 +23,25 @@ final class DataViewComponent extends Control
 	/** @var array<array-key, callable(Control, DataViewComponent<T>): void> */
 	public array $onRedrawRequest = [];
 
+	private EventDispatcher $eventDispatcher;
+
 	/**
 	 * @param DataSource<T> $dataSource
 	 */
 	public function __construct(private DataSource $dataSource)
 	{
+		if (class_exists(EventDispatcher::class)) {
+			$this->eventDispatcher = new EventDispatcher();
+		}
+	}
+
+	public function getEventDispatcher(): EventDispatcher
+	{
+		if (!isset($this->eventDispatcher)) {
+			throw new LogicException(sprintf('Class %s does not exist.', EventDispatcher::class));
+		}
+
+		return $this->eventDispatcher;
 	}
 
 	/**
