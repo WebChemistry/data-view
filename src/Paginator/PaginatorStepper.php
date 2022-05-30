@@ -54,7 +54,7 @@ final class PaginatorStepper
 	}
 
 	/**
-	 * @return int[]
+	 * @return int<1, max>[]
 	 */
 	public function getSteps(Paginator $paginator): array
 	{
@@ -84,7 +84,10 @@ final class PaginatorStepper
 			$steps[] = $lastPage;
 		}
 
-		return array_values(array_unique($steps));
+		/** @var int<1, max>[] $steps */
+		$steps = array_values(array_unique($steps));
+
+		return $steps;
 	}
 
 }

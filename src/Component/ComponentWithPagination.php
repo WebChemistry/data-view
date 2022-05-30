@@ -19,13 +19,17 @@ abstract class ComponentWithPagination extends BaseViewComponent
 
 	private Paginator $paginator;
 
-	/** @var int[] */
+	/** @var int<1, max>[] */
 	private array $steps;
 
 	private PaginatorStepper $stepper;
 
+	/** @var int<0, max>|null */
 	private ?int $offset = null;
 
+	/**
+	 * @param int<1, max> $itemsPerPage
+	 */
 	public function __construct(
 		protected int $itemsPerPage,
 	)
@@ -33,15 +37,24 @@ abstract class ComponentWithPagination extends BaseViewComponent
 		$this->stepper = new PaginatorStepper();
 
 		$this->onAnchor[] = function (): void {
-			$this->offset = $this->getPaginator()->getOffset();
+			/** @var int<0, max> $offset */
+			$offset = $this->getPaginator()->getOffset();
+
+			$this->offset = $offset;
 		};
 	}
 
+	/**
+	 * @return int<0, max>|null
+	 */
 	public function getOffset(): ?int
 	{
 		return $this->offset;
 	}
 
+	/**
+	 * @return int<0, max>
+	 */
 	public function getLimit(): int
 	{
 		return $this->itemsPerPage;
@@ -53,7 +66,7 @@ abstract class ComponentWithPagination extends BaseViewComponent
 	}
 
 	/**
-	 * @return int[]
+	 * @return int<1, max>[]
 	 */
 	public function getSteps(): array
 	{
