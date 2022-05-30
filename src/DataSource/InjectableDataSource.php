@@ -8,7 +8,6 @@ use Nette\Utils\Type;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionNamedType;
-use Tracy\Debugger;
 use WebChemistry\DataView\DataViewComponent;
 
 /**
@@ -35,6 +34,7 @@ final class InjectableDataSource implements DataSource
 
 	/**
 	 * @param DataViewComponent<T> $component
+	 * @return DataSet<T>
 	 */
 	public function getDataSet(DataViewComponent $component): DataSet
 	{
@@ -50,7 +50,7 @@ final class InjectableDataSource implements DataSource
 			);
 		}
 
-		return $source->getDataSet($component);
+		return $source->getDataSet($component); // @phpstan-ignore-line
 	}
 
 	/**
