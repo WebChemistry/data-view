@@ -23,13 +23,18 @@ final class CacheableDataSource implements DataSource
 	{
 	}
 
+	public function refresh(): void
+	{
+		unset($this->dataSet);
+	}
+
 	/**
 	 * @param DataViewComponent<T> $component
 	 * @return DataSet<T>
 	 */
-	public function getDataSet(DataViewComponent $component, bool $fresh = false): DataSet
+	public function getDataSet(DataViewComponent $component): DataSet
 	{
-		if ($fresh || !isset($this->dataSet)) {
+		if (!isset($this->dataSet)) {
 			$this->dataSet = $this->dataSource->getDataSet($component);
 		}
 
