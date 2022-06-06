@@ -4,6 +4,7 @@ namespace WebChemistry\DataView\Component;
 
 use Nette\Application\Attributes\Persistent;
 use Nette\Utils\Paginator;
+use WebChemistry\DataView\DataSource\CacheableDataSource;
 use WebChemistry\DataView\Paginator\PaginatorStepper;
 use WebChemistry\DataView\Utility\PaginatorFactory;
 
@@ -62,7 +63,19 @@ abstract class ComponentWithPagination extends BaseViewComponent
 
 	protected function getPaginator(): Paginator
 	{
-		return $this->paginator ??= PaginatorFactory::createPaginator($this->itemsPerPage, $this->getDataView()->getDataSet()->getCount(), $this->page);
+		if (!isset($this->paginator)) {
+			$dataView = $this->getDataView();
+			$dataSource = $dataView->getDataSource();
+			$count = $dataSource->getDataSet($dataView)->getCount();
+
+			if ($dataSource instanceof CacheableDataSource) {
+				$dataSource->refresh();
+			}
+
+			$this->paginator = PaginatorFactory::createPaginator($this->itemsPerPage, $count, $this->page);
+		}
+
+		return $this->paginator;
 	}
 
 	/**
