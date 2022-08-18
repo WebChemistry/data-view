@@ -2,6 +2,7 @@
 
 namespace WebChemistry\DataView;
 
+use DomainException;
 use Iterator;
 use LogicException;
 use Nette\Application\UI\Control;
@@ -71,6 +72,28 @@ final class DataViewComponent extends Control
 	public function getDataSet(): DataSet
 	{
 		return $this->dataSource->getDataSet($this);
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $className
+	 * @return T
+	 */
+	public function getComponentByClass(string $className): object
+	{
+		$objects = iterator_to_array($this->getComponents(false, $className));
+
+		return match (count($objects)) {
+			1 => Arrays::first($objects),
+			0 => throw new DomainException(sprintf('Missing component of type "%s" in data-view "%s".', $this->getName())),
+			default => throw new DomainException(
+				sprintf(
+					'Multiple components of type "%s" in data-view "%s", components: %s.',
+					$this->getName(),
+					implode(', ', array_map('get_class', $objects))
+				)
+			),
+		};
 	}
 
 	/**
