@@ -75,25 +75,34 @@ final class DataViewComponent extends Control
 	}
 
 	/**
-	 * @template T of object
-	 * @param class-string<T> $className
-	 * @return T
+	 * @template C of object
+	 * @param class-string<C> $className
+	 * @return C
 	 */
 	public function getComponentByClass(string $className): object
 	{
 		$objects = iterator_to_array($this->getComponents(false, $className));
+		$count = count($objects);
 
-		return match (count($objects)) {
-			1 => Arrays::first($objects),
-			0 => throw new DomainException(sprintf('Missing component of type "%s" in data-view "%s".', $this->getName())),
-			default => throw new DomainException(
-				sprintf(
-					'Multiple components of type "%s" in data-view "%s", components: %s.',
-					$this->getName(),
-					implode(', ', array_map('get_class', $objects))
-				)
-			),
-		};
+		if ($count === 1) {
+			/** @var C */
+			return Arrays::first($objects);
+		}
+
+		if ($count === 0) {
+			throw new DomainException(
+				sprintf('Missing component of type "%s" in data-view "%s".', $className, $this->getName())
+			);
+		}
+
+		throw new DomainException(
+			sprintf(
+				'Multiple components of type "%s" in data-view "%s", components: %s.',
+				$className,
+				$this->getName(),
+				implode(', ', array_map('get_class', $objects))
+			)
+		);
 	}
 
 	/**
