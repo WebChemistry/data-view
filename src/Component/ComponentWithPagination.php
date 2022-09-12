@@ -61,7 +61,7 @@ abstract class ComponentWithPagination extends BaseViewComponent
 		return $this->itemsPerPage;
 	}
 
-	protected function getPaginator(): Paginator
+	public function getPaginator(): Paginator
 	{
 		if (!isset($this->paginator)) {
 			$dataView = $this->getDataView();
