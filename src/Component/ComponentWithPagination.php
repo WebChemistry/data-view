@@ -28,6 +28,8 @@ abstract class ComponentWithPagination extends BaseViewComponent
 	/** @var int<0, max>|null */
 	private ?int $offset = null;
 
+	private bool $computing = false;
+
 	/**
 	 * @param int<1, max> $itemsPerPage
 	 */
@@ -36,13 +38,6 @@ abstract class ComponentWithPagination extends BaseViewComponent
 	)
 	{
 		$this->stepper = new PaginatorStepper();
-
-		$this->onAnchor[] = function (): void {
-			/** @var int<0, max> $offset */
-			$offset = $this->getPaginator()->getOffset();
-
-			$this->offset = $offset;
-		};
 	}
 
 	/**
@@ -50,6 +45,20 @@ abstract class ComponentWithPagination extends BaseViewComponent
 	 */
 	public function getOffset(): ?int
 	{
+		if ($this->offset !== null) {
+			return $this->offset;
+		}
+
+		if ($this->computing) {
+			return null;
+		}
+
+		$this->computing = true;
+
+		$this->offset = $this->getPaginator()->getOffset();
+
+		$this->computing = false;
+
 		return $this->offset;
 	}
 
