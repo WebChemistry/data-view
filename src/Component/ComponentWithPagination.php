@@ -4,6 +4,7 @@ namespace WebChemistry\DataView\Component;
 
 use Nette\Application\Attributes\Persistent;
 use Nette\Utils\Paginator;
+use WebChemistry\DataView\Component\Exception\PaginationOutOfBoundsException;
 use WebChemistry\DataView\DataSource\CacheableDataSource;
 use WebChemistry\DataView\Paginator\PaginatorStepper;
 use WebChemistry\DataView\Utility\PaginatorFactory;
@@ -30,6 +31,11 @@ abstract class ComponentWithPagination extends BaseViewComponent
 
 	private bool $computing = false;
 
+	private bool $strictOutOfBounds = false;
+
+	/** @var list<callable(): void> */
+	public array $onOutOfBounds = [];
+
 	/**
 	 * @param int<1, max> $itemsPerPage
 	 */
@@ -38,6 +44,13 @@ abstract class ComponentWithPagination extends BaseViewComponent
 	)
 	{
 		$this->stepper = new PaginatorStepper();
+	}
+
+	public function setStrictOutOfBounds(bool $strictOutOfBounds = true): static
+	{
+		$this->strictOutOfBounds = $strictOutOfBounds;
+
+		return $this;
 	}
 
 	/**
@@ -55,7 +68,10 @@ abstract class ComponentWithPagination extends BaseViewComponent
 
 		$this->computing = true;
 
-		$this->offset = $this->getPaginator()->getOffset();
+		/** @var int<0, max> $offset */
+		$offset = $this->getPaginator()->getOffset();
+
+		$this->offset = $offset;
 
 		$this->computing = false;
 
@@ -81,7 +97,16 @@ abstract class ComponentWithPagination extends BaseViewComponent
 				$dataSource->refresh();
 			}
 
-			$this->paginator = PaginatorFactory::createPaginator($this->itemsPerPage, $count, $this->page);
+			$paginator = PaginatorFactory::createPaginator($this->itemsPerPage, $count, $this->page);
+			$pageCount = $paginator->getPageCount();
+
+			if ($this->page > $pageCount) {
+				$this->outOfBoundsDetected();
+			} else if ($this->page < 1) {
+				$this->outOfBoundsDetected();
+			}
+
+			$this->paginator = $paginator;
 		}
 
 		return $this->paginator;
@@ -98,6 +123,17 @@ abstract class ComponentWithPagination extends BaseViewComponent
 	public function getStepper(): PaginatorStepper
 	{
 		return $this->stepper;
+	}
+
+	protected function outOfBoundsDetected(): void
+	{
+		foreach ($this->onOutOfBounds as $callback) {
+			$callback();
+		}
+
+		if ($this->strictOutOfBounds) {
+			throw new PaginationOutOfBoundsException();
+		}
 	}
 
 }

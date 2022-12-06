@@ -3,7 +3,7 @@
 <nav>
 	<ul class="pagination">
 		<li n:class="!$previousLink ? disabled">
-			<a n:attr="href => $previousLink" n:class="$ajax ? ajax" aria-label="Previous">
+			<a n:attr="href => $previousLink" n:class="$ajax ? ajax" rel="prev" aria-label="Previous">
 				<span aria-hidden="true">&laquo;</span>
 			</a>
 		</li>
@@ -11,7 +11,7 @@
 			<a n:class="$ajax ? ajax" href="{stepLink($step)}">{$step}</a>
 		</li>
 		<li n:class="!$nextLink ? disabled">
-			<a n:attr="href => $nextLink" n:class="$ajax ? ajax" aria-label="Next">
+			<a n:attr="href => $nextLink" n:class="$ajax ? ajax" rel="next" aria-label="Next">
 				<span aria-hidden="true">&raquo;</span>
 			</a>
 		</li>

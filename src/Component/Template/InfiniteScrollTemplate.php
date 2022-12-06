@@ -16,6 +16,14 @@ final class InfiniteScrollTemplate extends Template
 
 	public ?string $nextLink;
 
+	public ?string $nextLinkAjax;
+
+	public string $caption;
+
+	public ?string $class;
+
+	public ?string $linkClass;
+
 	public ?int $offset;
 
 }

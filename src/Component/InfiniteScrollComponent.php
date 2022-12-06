@@ -14,6 +14,12 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 
 	use ComponentWithPublicTemplate;
 
+	private string $caption = 'Next page';
+
+	private ?string $class = null;
+
+	private ?string $linkClass = null;
+
 	public const TEMPLATES = [
 		'default' => __DIR__ . '/templates/infiniteScroll/default.latte',
 		'stimulus' => __DIR__ . '/templates/infiniteScroll/stimulus.latte',
@@ -27,6 +33,27 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 		parent::__construct($itemsPerPage);
 
 		$this->setFile(self::TEMPLATES['default']);
+	}
+
+	public function setClass(?string $class): static
+	{
+		$this->class = $class;
+
+		return $this;
+	}
+
+	public function setLinkClass(?string $linkClass): static
+	{
+		$this->linkClass = $linkClass;
+
+		return $this;
+	}
+
+	public function setCaption(string $caption): static
+	{
+		$this->caption = $caption;
+
+		return $this;
 	}
 
 	public function setObserveOffset(?int $observeOffset): static
@@ -43,14 +70,27 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 		$template->setFile($this->getFile());
 		$template->nextLink = $this->getNextLink();
 		$template->offset = $this->observeOffset;
+		$template->nextLinkAjax = $this->getNextLinkAjax();
+		$template->caption = $this->caption;
+		$template->class = $this->class;
+		$template->linkClass = $this->linkClass;
 
 		$template->render();
+	}
+
+	public function getNextLinkAjax(): ?string
+	{
+		if ($this->page < $this->getPaginator()->getPageCount()) {
+			return $this->link('paginate!', ['page' => $this->page + 1]);
+		}
+
+		return null;
 	}
 
 	public function getNextLink(): ?string
 	{
 		if ($this->page < $this->getPaginator()->getPageCount()) {
-			return $this->link('paginate!', ['page' => $this->page + 1]);
+			return $this->link('this', ['page' => $this->page + 1]);
 		}
 
 		return null;
