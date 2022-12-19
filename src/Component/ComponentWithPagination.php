@@ -100,9 +100,9 @@ abstract class ComponentWithPagination extends BaseViewComponent
 			$paginator = PaginatorFactory::createPaginator($this->itemsPerPage, $count, $this->page);
 			$pageCount = $paginator->getPageCount();
 
-			if ($this->page > $pageCount) {
+			if ($this->page < 1) {
 				$this->outOfBoundsDetected();
-			} else if ($this->page < 1) {
+			} else if ($this->page !== 1 && $this->page > $pageCount) {
 				$this->outOfBoundsDetected();
 			}
 
