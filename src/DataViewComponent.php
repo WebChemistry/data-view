@@ -24,6 +24,9 @@ final class DataViewComponent extends Control
 	/** @var array<array-key, callable(Control, DataViewComponent<T>): void> */
 	public array $onRedrawRequest = [];
 
+	/** @var array<array-key, callable(DataViewComponent<T>, DataViewComponentTemplate): void> */
+	public array $onRender = [];
+
 	private EventDispatcher $eventDispatcher;
 
 	/**
@@ -129,6 +132,10 @@ final class DataViewComponent extends Control
 		$template = $this->createTemplate(DataViewComponentTemplate::class);
 		$template->setFile(__DIR__ . '/templates/dataView.latte');
 		$template->components = $this->getComponentsForRendering($components);
+
+		foreach ($this->onRender as $callback) {
+			$callback($this, $template);
+		}
 
 		$template->render();
 	}
