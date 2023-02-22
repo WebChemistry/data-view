@@ -18,6 +18,7 @@ final class FastSignalDataSource implements DataSource
 	public function __construct(
 		private string $componentName,
 		private DataSource $dataSource,
+		private bool $strict = true,
 	)
 	{
 	}
@@ -28,7 +29,11 @@ final class FastSignalDataSource implements DataSource
 	 */
 	public function getDataSet(DataViewComponent $component): DataSet
 	{
-		$presenter = $component->getPresenter();
+		if ($this->strict) {
+			$presenter = $component->getPresenter();
+		} else if (!($presenter = $component->getPresenterIfExists())) {
+			return $this->dataSource->getDataSet($component);
+		}
 
 		if (!$component->getComponent($this->componentName, false)) {
 			$component->onRender[] = function (DataViewComponent $component): void {
