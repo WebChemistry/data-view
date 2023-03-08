@@ -1,7 +1,7 @@
 {templateType WebChemistry\DataView\Component\Template\InfiniteScrollTemplate}
 
 {snippet}
-	<div n:if="$nextLink" n:attr="class: $class" div data-infinite-scroll="{$nextLinkAjax}" data-infinite-scroll-offset="{$offset}">
+	<div n:if="$nextLink" n:attr="class: $class" data-infinite-scroll="{$nextLinkAjax}" data-infinite-scroll-offset="{$offset}">
 		<a rel="next" href="{$nextLink}" n:attr="class: $linkClass">{$caption}</a>
 	</div>
 {/snippet}

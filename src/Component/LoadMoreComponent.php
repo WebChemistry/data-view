@@ -3,13 +3,13 @@
 namespace WebChemistry\DataView\Component;
 
 use Nette\Application\UI\Presenter;
-use WebChemistry\DataView\Component\Template\InfiniteScrollTemplate;
+use WebChemistry\DataView\Component\Template\LoadMoreComponentTemplate;
 
 /**
  * @template T
  * @extends ComponentWithPagination<T>
  */
-final class InfiniteScrollComponent extends ComponentWithPagination
+final class LoadMoreComponent extends ComponentWithPagination
 {
 
 	use ComponentWithPublicTemplate;
@@ -20,19 +20,18 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 
 	private ?string $linkClass = null;
 
-	public const TEMPLATES = [
-		'default' => __DIR__ . '/templates/infiniteScroll/default.latte',
-		'stimulus' => __DIR__ . '/templates/infiniteScroll/stimulus.latte',
-	];
-
-	public function __construct(
-		int $itemsPerPage,
-		private ?int $observeOffset = null,
-	)
+	public function __construct(int $itemsPerPage)
 	{
 		parent::__construct($itemsPerPage);
 
-		$this->setFile(self::TEMPLATES['default']);
+		$this->setFile(__DIR__ . '/templates/loadMore/default.latte');
+	}
+
+	public function setCaption(string $caption): static
+	{
+		$this->caption = $caption;
+
+		return $this;
 	}
 
 	public function setClass(?string $class): static
@@ -49,27 +48,12 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 		return $this;
 	}
 
-	public function setCaption(string $caption): static
-	{
-		$this->caption = $caption;
-
-		return $this;
-	}
-
-	public function setObserveOffset(?int $observeOffset): static
-	{
-		$this->observeOffset = $observeOffset;
-
-		return $this;
-	}
-
 	public function render(): void
 	{
-		/** @var InfiniteScrollTemplate<T> $template */
+		/** @var LoadMoreComponentTemplate<T> $template */
 		$template = $this->createTemplate();
 		$template->setFile($this->getFile());
 		$template->nextLink = $this->getNextLink();
-		$template->offset = $this->observeOffset;
 		$template->nextLinkAjax = $this->getNextLinkAjax();
 		$template->caption = $this->caption;
 		$template->class = $this->class;
@@ -78,19 +62,19 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 		$template->render();
 	}
 
-	public function getNextLinkAjax(): ?string
+	public function getNextLink(): ?string
 	{
 		if ($this->page < $this->getPaginator()->getPageCount()) {
-			return $this->link('paginate!', ['page' => $this->page + 1]);
+			return $this->link('this', ['page' => $this->page + 1]);
 		}
 
 		return null;
 	}
 
-	public function getNextLink(): ?string
+	public function getNextLinkAjax(): ?string
 	{
 		if ($this->page < $this->getPaginator()->getPageCount()) {
-			return $this->link('this', ['page' => $this->page + 1]);
+			return $this->link('paginate!', ['page' => $this->page + 1]);
 		}
 
 		return null;
@@ -106,11 +90,11 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 
 			$this->redrawControl();
 		}
- 	}
+	}
 
 	public function formatTemplateClass(): string
 	{
-		return InfiniteScrollTemplate::class;
+		return LoadMoreComponentTemplate::class;
 	}
 
 }
