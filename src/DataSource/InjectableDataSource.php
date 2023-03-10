@@ -8,6 +8,7 @@ use Nette\Utils\Type;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionNamedType;
+use WebChemistry\DataView\DataSet\DataSet;
 use WebChemistry\DataView\DataViewComponent;
 
 /**

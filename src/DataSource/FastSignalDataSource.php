@@ -3,6 +3,8 @@
 namespace WebChemistry\DataView\DataSource;
 
 use OutOfBoundsException;
+use WebChemistry\DataView\DataSet\ArrayDataSet;
+use WebChemistry\DataView\DataSet\DataSet;
 use WebChemistry\DataView\DataViewComponent;
 
 /**
@@ -50,7 +52,7 @@ final class FastSignalDataSource implements DataSource
 			$signalName = $presenter->getSignal()[0] ?? null;
 
 			if (is_string($signalName) && str_starts_with($signalName, $id)) {
-				return new DataSet(0, []);
+				return new ArrayDataSet(0, []);
 			}
 		}
 

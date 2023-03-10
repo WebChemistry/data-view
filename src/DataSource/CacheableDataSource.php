@@ -2,6 +2,7 @@
 
 namespace WebChemistry\DataView\DataSource;
 
+use WebChemistry\DataView\DataSet\DataSet;
 use WebChemistry\DataView\DataViewComponent;
 
 /**
@@ -34,11 +35,7 @@ final class CacheableDataSource implements DataSource
 	 */
 	public function getDataSet(DataViewComponent $component): DataSet
 	{
-		if (!isset($this->dataSet)) {
-			$this->dataSet = $this->dataSource->getDataSet($component);
-		}
-
-		return $this->dataSet;
+		return $this->dataSet ??= $this->dataSource->getDataSet($component);
 	}
 
 }

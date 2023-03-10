@@ -2,6 +2,7 @@
 
 namespace WebChemistry\DataView\DataSource;
 
+use WebChemistry\DataView\DataSet\DataSet;
 use WebChemistry\DataView\DataViewComponent;
 
 /**

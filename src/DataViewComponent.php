@@ -2,23 +2,28 @@
 
 namespace WebChemistry\DataView;
 
+use ArrayIterator;
 use DomainException;
+use Exception;
 use Iterator;
+use IteratorAggregate;
 use LogicException;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Renderable;
 use Nette\ComponentModel\IComponent;
 use Nette\Utils\Arrays;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use WebChemistry\DataView\DataSource\DataSet;
+use Traversable;
+use WebChemistry\DataView\DataSet\DataSet;
 use WebChemistry\DataView\DataSource\DataSource;
 use WebChemistry\DataView\Render\RenderCollection;
 use WebChemistry\DataView\Template\DataViewComponentTemplate;
 
 /**
  * @template T
+ * @implements IteratorAggregate<array-key, T>
  */
-final class DataViewComponent extends Control
+class DataViewComponent extends Control implements IteratorAggregate
 {
 
 	/** @var array<array-key, callable(Control, DataViewComponent<T>): void> */
@@ -27,12 +32,14 @@ final class DataViewComponent extends Control
 	/** @var array<array-key, callable(DataViewComponent<T>, DataViewComponentTemplate): void> */
 	public array $onRender = [];
 
-	private EventDispatcher $eventDispatcher;
+	protected EventDispatcher $eventDispatcher;
 
 	/**
 	 * @param DataSource<T> $dataSource
 	 */
-	public function __construct(private DataSource $dataSource)
+	public function __construct(
+		protected DataSource $dataSource,
+	)
 	{
 		if (class_exists(EventDispatcher::class)) {
 			$this->eventDispatcher = new EventDispatcher();
@@ -67,6 +74,22 @@ final class DataViewComponent extends Control
 	public function getData(): array
 	{
 		return $this->getDataSet()->getData();
+	}
+
+	/**
+	 * @return iterable<array-key, T>
+	 */
+	public function getIterableData(): iterable
+	{
+		return $this->getDataSet()->getIterable();
+	}
+
+	/**
+	 * @return ArrayIterator<array-key, T>
+	 */
+	public function getIterator(): ArrayIterator
+	{
+		return new ArrayIterator($this->getData());
 	}
 
 	/**

@@ -2,6 +2,7 @@
 
 namespace WebChemistry\DataView\DataSource;
 
+use WebChemistry\DataView\DataSet\ArrayDataSet;
 use WebChemistry\DataView\DataViewComponent;
 
 /**
@@ -17,7 +18,7 @@ final class ArrayDataSource implements DataSource
 	/**
 	 * @param T[] $array
 	 * @param int<0, max>|null $limit
-	 * @param int<0, max> $offset
+	 * @param int<0, max>|null $offset
 	 */
 	public function __construct(
 		private array $array,
@@ -54,11 +55,11 @@ final class ArrayDataSource implements DataSource
 
 	/**
 	 * @param DataViewComponent<T> $component
-	 * @return DataSet<T>
+	 * @return ArrayDataSet<T>
 	 */
-	public function getDataSet(DataViewComponent $component): DataSet
+	public function getDataSet(DataViewComponent $component): ArrayDataSet
 	{
-		return new DataSet(count($this->array), array_slice($this->array, $this->offset, $this->limit));
+		return new ArrayDataSet(count($this->array), array_slice($this->array, $this->offset, $this->limit));
 	}
 
 }
