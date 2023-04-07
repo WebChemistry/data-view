@@ -3,6 +3,7 @@
 namespace WebChemistry\DataView;
 
 use ArrayIterator;
+use Countable;
 use DomainException;
 use Exception;
 use Iterator;
@@ -23,7 +24,7 @@ use WebChemistry\DataView\Template\DataViewComponentTemplate;
  * @template T
  * @implements IteratorAggregate<array-key, T>
  */
-class DataViewComponent extends Control implements IteratorAggregate
+class DataViewComponent extends Control implements IteratorAggregate, Countable
 {
 
 	/** @var array<array-key, callable(Control, DataViewComponent<T>): void> */
@@ -74,6 +75,11 @@ class DataViewComponent extends Control implements IteratorAggregate
 	public function getData(): array
 	{
 		return $this->getDataSet()->getData();
+	}
+
+	public function count(): int
+	{
+		return $this->getDataSet()->getCount();
 	}
 
 	/**
