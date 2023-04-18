@@ -15,6 +15,8 @@ use Nette\ComponentModel\IComponent;
 use Nette\Utils\Arrays;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Traversable;
+use WebChemistry\DataView\Component\ComponentWithPagination;
+use WebChemistry\DataView\Cursor\Cursor;
 use WebChemistry\DataView\DataSet\DataSet;
 use WebChemistry\DataView\DataSource\DataSource;
 use WebChemistry\DataView\Render\RenderCollection;
@@ -34,6 +36,9 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	public array $onRender = [];
 
 	protected EventDispatcher $eventDispatcher;
+
+	/** @var array<T> */
+	private array $data;
 
 	/**
 	 * @param DataSource<T> $dataSource
@@ -74,7 +79,7 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	 */
 	public function getData(): array
 	{
-		return $this->getDataSet()->getData();
+		return $this->data ??= $this->getDataSet()->getData($this->createCursor());
 	}
 
 	public function count(): int
@@ -87,7 +92,12 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	 */
 	public function getIterableData(): iterable
 	{
-		return $this->getDataSet()->getIterable();
+		return $this->getDataSet()->getIterable($this->createCursor());
+	}
+
+	private function createCursor(): ?Cursor
+	{
+		return $this->getOptionalComponentByClass(ComponentWithPagination::class)?->createCursor();
 	}
 
 	/**
@@ -113,6 +123,24 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	 */
 	public function getComponentByClass(string $className): object
 	{
+		$component = $this->getOptionalComponentByClass($className);
+
+		if (!$component) {
+			throw new DomainException(
+				sprintf('Missing component of type "%s" in data-view "%s".', $className, $this->getName())
+			);
+		}
+
+		return $component;
+	}
+
+	/**
+	 * @template C of object
+	 * @param class-string<C> $className
+	 * @return C|null
+	 */
+	public function getOptionalComponentByClass(string $className): ?object
+	{
 		$objects = iterator_to_array($this->getComponents(false, $className));
 		$count = count($objects);
 
@@ -122,9 +150,7 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		}
 
 		if ($count === 0) {
-			throw new DomainException(
-				sprintf('Missing component of type "%s" in data-view "%s".', $className, $this->getName())
-			);
+			return null;
 		}
 
 		throw new DomainException(

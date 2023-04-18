@@ -5,7 +5,9 @@ namespace WebChemistry\DataView\DataSource;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use WebChemistry\DataView\DataSet\IterableDataSet;
+use WebChemistry\DataView\DataSet\CacheableDataSet;
+use WebChemistry\DataView\DataSet\DataSet;
+use WebChemistry\DataView\DataSet\DoctrineDataSet;
 use WebChemistry\DataView\DataViewComponent;
 
 /**
@@ -37,16 +39,11 @@ final class DoctrineDataSource implements DataSource
 
 	/**
 	 * @param DataViewComponent<T> $dataViewComponent
-	 * @return IterableDataSet<T>
+	 * @return DataSet<T>
 	 */
-	public function getDataSet(DataViewComponent $dataViewComponent): IterableDataSet
+	public function getDataSet(DataViewComponent $dataViewComponent): DataSet
 	{
-		$paginator = $this->createPaginator();
-
-		return new IterableDataSet(
-			$paginator->count(),
-			$paginator->getIterator(),
-		);
+		return new CacheableDataSet(new DoctrineDataSet($this->createPaginator()));
 	}
 
 	/**

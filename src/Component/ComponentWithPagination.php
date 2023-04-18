@@ -5,7 +5,9 @@ namespace WebChemistry\DataView\Component;
 use Nette\Application\Attributes\Persistent;
 use Nette\Utils\Paginator;
 use WebChemistry\DataView\Component\Exception\PaginationOutOfBoundsException;
-use WebChemistry\DataView\DataSource\CacheableDataSource;
+use WebChemistry\DataView\Cursor\Cursor;
+use WebChemistry\DataView\Cursor\LimitCursor;
+use WebChemistry\DataView\Cursor\OffsetCursor;
 use WebChemistry\DataView\Paginator\PaginatorStepper;
 use WebChemistry\DataView\Utility\PaginatorFactory;
 
@@ -53,6 +55,17 @@ abstract class ComponentWithPagination extends BaseViewComponent
 		return $this;
 	}
 
+	public function createCursor(): Cursor
+	{
+		$offset = $this->getOffset();
+
+		if ($offset === null) {
+			return new LimitCursor($this->getLimit());
+		}
+
+		return new OffsetCursor($offset, $this->getLimit());
+	}
+
 	/**
 	 * @return int<0, max>|null
 	 */
@@ -90,12 +103,7 @@ abstract class ComponentWithPagination extends BaseViewComponent
 	{
 		if (!isset($this->paginator)) {
 			$dataView = $this->getDataView();
-			$dataSource = $dataView->getDataSource();
-			$count = $dataSource->getDataSet($dataView)->getCount();
-
-			if ($dataSource instanceof CacheableDataSource) {
-				$dataSource->refresh();
-			}
+			$count = $dataView->count();
 
 			$paginator = PaginatorFactory::createPaginator($this->itemsPerPage, $count, $this->page);
 			$pageCount = $paginator->getPageCount();

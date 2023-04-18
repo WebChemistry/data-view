@@ -2,6 +2,8 @@
 
 namespace WebChemistry\DataView\DataSet;
 
+use WebChemistry\DataView\Cursor\Cursor;
+
 /**
  * @template TValue
  */
@@ -11,15 +13,15 @@ interface DataSet
 	/**
 	 * @return array<array-key, TValue>
 	 */
-	public function getIterable(): iterable;
+	public function getIterable(?Cursor $cursor = null): iterable;
 
 	/**
 	 * @return array<array-key, TValue>
 	 */
-	public function getData(): array;
+	public function getData(?Cursor $cursor = null): array;
 
 	public function getCount(): int;
-	
+
 	public function hasData(): bool;
-	
+
 }
