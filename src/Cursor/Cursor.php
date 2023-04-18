@@ -6,7 +6,10 @@ interface Cursor
 {
 
 	public function getUid(): string;
-	
+
+	/**
+	 * @return int<0, max>|null
+	 */
 	public function getLimit(): ?int;
 
 }
