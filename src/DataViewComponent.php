@@ -25,7 +25,6 @@ use WebChemistry\DataView\Template\DataViewComponentTemplate;
 
 /**
  * @template T
- * @template TObject = stdClass
  * @implements IteratorAggregate<array-key, T>
  */
 class DataViewComponent extends Control implements IteratorAggregate, Countable
@@ -187,6 +186,14 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		}
 
 		return $object;
+	}
+
+	/**
+	 * @return ComponentWithPagination<T>
+	 */
+	public function getPaginationComponent(): ComponentWithPagination
+	{
+		return $this->getComponentByClass(ComponentWithPagination::class);
 	}
 
 	/**
