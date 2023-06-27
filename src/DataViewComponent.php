@@ -41,6 +41,7 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	/** @var array<T> */
 	private array $data;
 
+	/** @var DataViewParts<T> */
 	private DataViewParts $parts;
 
 	/**
@@ -54,7 +55,7 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 			$this->eventDispatcher = new EventDispatcher();
 		}
 
-		$this->parts = new DataViewParts();
+		$this->parts = new DataViewParts($this);
 	}
 
 	public function getEventDispatcher(): EventDispatcher
@@ -66,6 +67,9 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		return $this->eventDispatcher;
 	}
 
+	/**
+	 * @return DataViewParts<T>
+	 */
 	public function getParts(): DataViewParts
 	{
 		return $this->parts;

@@ -3,38 +3,53 @@
 namespace WebChemistry\DataView\Parts;
 
 use OutOfBoundsException;
+use WebChemistry\DataView\DataViewComponent;
 
+/**
+ * @template T
+ */
 final class DataViewParts
 {
 
 	/** @var array<string, object> */
 	private array $parts;
 
-	/** @var array<string, callable[]> */
+	/** @var array<string, array<callable(object, DataViewComponent<T>=): void>> */
 	private array $monitors = [];
 
 	/**
-	 * @param callable(object): void $callback
+	 * @param DataViewComponent<T> $dataViewComponent
+	 */
+	public function __construct(
+		private DataViewComponent $dataViewComponent,
+	)
+	{
+	}
+
+	/**
+	 * @param callable(object, DataViewComponent<T>=): void $callback
+	 * @return self<T>
 	 */
 	public function monitor(string $name, callable $callback): self
 	{
 		$this->monitors[$name][] = $callback;
 
 		if (isset($this->parts[$name])) {
-			$callback($this->parts[$name]);
+			$callback($this->parts[$name], $this->dataViewComponent);
 		}
 
 		return $this;
 	}
 
+	/**
+	 * @return self<T>
+	 */
 	public function add(string $name, object $part): self
 	{
 		$this->parts[$name] = $part;
 
-		if (isset($this->monitors[$name])) {
-			foreach ($this->monitors[$name] as $callback) {
-				$callback($part);
-			}
+		foreach ($this->monitors[$name] ?? [] as $callback) {
+			$callback($part, $this->dataViewComponent);
 		}
 
 		return $this;
@@ -59,6 +74,9 @@ final class DataViewParts
 		return isset($this->parts[$name]);
 	}
 
+	/**
+	 * @return self<T>
+	 */
 	public function remove(string $name): self
 	{
 		unset($this->parts[$name]);
