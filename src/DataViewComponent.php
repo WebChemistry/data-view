@@ -19,11 +19,13 @@ use WebChemistry\DataView\Component\ComponentWithPagination;
 use WebChemistry\DataView\Cursor\Cursor;
 use WebChemistry\DataView\DataSet\DataSet;
 use WebChemistry\DataView\DataSource\DataSource;
+use WebChemistry\DataView\Parts\DataViewParts;
 use WebChemistry\DataView\Render\RenderCollection;
 use WebChemistry\DataView\Template\DataViewComponentTemplate;
 
 /**
  * @template T
+ * @template TObject = stdClass
  * @implements IteratorAggregate<array-key, T>
  */
 class DataViewComponent extends Control implements IteratorAggregate, Countable
@@ -40,6 +42,8 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	/** @var array<T> */
 	private array $data;
 
+	private DataViewParts $parts;
+
 	/**
 	 * @param DataSource<T> $dataSource
 	 */
@@ -50,6 +54,8 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		if (class_exists(EventDispatcher::class)) {
 			$this->eventDispatcher = new EventDispatcher();
 		}
+
+		$this->parts = new DataViewParts();
 	}
 
 	public function getEventDispatcher(): EventDispatcher
@@ -59,6 +65,11 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		}
 
 		return $this->eventDispatcher;
+	}
+
+	public function getParts(): DataViewParts
+	{
+		return $this->parts;
 	}
 
 	/**
