@@ -10,9 +10,32 @@ final class DataViewParts
 	/** @var array<string, object> */
 	private array $parts;
 
+	/** @var array<string, callable[]> */
+	private array $monitors = [];
+
+	/**
+	 * @param callable(object): void $callback
+	 */
+	public function monitor(string $name, callable $callback): self
+	{
+		$this->monitors[$name][] = $callback;
+
+		if (isset($this->parts[$name])) {
+			$callback($this->parts[$name]);
+		}
+
+		return $this;
+	}
+
 	public function add(string $name, object $part): self
 	{
 		$this->parts[$name] = $part;
+
+		if (isset($this->monitors[$name])) {
+			foreach ($this->monitors[$name] as $callback) {
+				$callback($part);
+			}
+		}
 
 		return $this;
 	}
