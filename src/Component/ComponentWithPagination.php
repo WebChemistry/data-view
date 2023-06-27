@@ -99,6 +99,21 @@ abstract class ComponentWithPagination extends BaseViewComponent
 		return $this->itemsPerPage;
 	}
 
+	public function isFirstPage(): bool
+	{
+		return $this->getPaginator()->isFirst();
+	}
+
+	public function isLastPage(): bool
+	{
+		return $this->getPaginator()->isLast();
+	}
+
+	public function getPageCount(): int
+	{
+		return $this->getPaginator()->getPageCount();
+	}
+
 	public function getPaginator(): Paginator
 	{
 		if (!isset($this->paginator)) {
