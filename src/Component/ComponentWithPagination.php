@@ -111,7 +111,7 @@ abstract class ComponentWithPagination extends BaseViewComponent
 
 	public function getPageCount(): int
 	{
-		return $this->getPaginator()->getPageCount();
+		return $this->getPaginator()->getPageCount() ?? 1;
 	}
 
 	public function getPaginator(): Paginator
