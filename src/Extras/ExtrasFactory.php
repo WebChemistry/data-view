@@ -12,9 +12,9 @@ interface ExtrasFactory
 
 	/**
 	 * @template TItem
-	 * @param DataSet<TItem> $dataSet
+	 * @param TItem[] $items
 	 * @return Extras<TItem, TValue>
 	 */
-	public function create(DataSet $dataSet): Extras;
+	public function create(array $items): Extras;
 
 }

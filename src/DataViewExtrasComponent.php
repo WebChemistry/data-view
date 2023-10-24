@@ -35,7 +35,7 @@ final class DataViewExtrasComponent extends DataViewComponent
 	 */
 	public function getExtrasFor(mixed $item): mixed
 	{
-		return ($this->extras ??= $this->extrasFactory->create($this->getDataSet()))
+		return ($this->extras ??= $this->extrasFactory->create($this->getData()))
 			->for($item);
 	}
 
