@@ -2,6 +2,11 @@
 
 namespace WebChemistry\DataView\DataSource;
 
+use Psr\Cache\CacheItemPoolInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use WebChemistry\DataView\DataSet\Cache\DataSetCache;
+use WebChemistry\DataView\DataSet\CacheableDataSet;
+use WebChemistry\DataView\DataSet\CacheDataSet;
 use WebChemistry\DataView\DataSet\DataSet;
 use WebChemistry\DataView\DataViewComponent;
 
@@ -20,6 +25,7 @@ final class CacheableDataSource implements DataSource
 	 */
 	public function __construct(
 		private DataSource $dataSource,
+		private ?DataSetCache $dataSetCache = null,
 	)
 	{
 	}
@@ -35,7 +41,7 @@ final class CacheableDataSource implements DataSource
 	 */
 	public function getDataSet(DataViewComponent $component): DataSet
 	{
-		return $this->dataSet ??= $this->dataSource->getDataSet($component);
+		return $this->dataSet ??= new CacheableDataSet($this->dataSource->getDataSet($component), dataSetCache: $this->dataSetCache);
 	}
 
 }
