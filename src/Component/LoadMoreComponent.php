@@ -54,7 +54,7 @@ final class LoadMoreComponent extends ComponentWithPagination
 		$template = $this->createTemplate();
 		$template->setFile($this->getFile());
 		$template->nextLink = $this->getNextLink();
-		$template->nextLinkAjax = $this->getNextLinkAjax();
+		$template->nextLinkAjax = $this->getNextLink(true);
 		$template->caption = $this->caption;
 		$template->class = $this->class;
 		$template->linkClass = $this->linkClass;
@@ -62,22 +62,17 @@ final class LoadMoreComponent extends ComponentWithPagination
 		$template->render();
 	}
 
-	public function getNextLink(): ?string
+	public function getNextLink(?bool $ajax = null): ?string
 	{
-		if ($this->page < $this->getPaginator()->getPageCount()) {
+		if ($this->page >= $this->getPaginator()->getPageCount()) {
+			return null;
+		}
+
+		if (!$ajax) {
 			return $this->link('this', ['page' => $this->page + 1]);
 		}
 
-		return null;
-	}
-
-	public function getNextLinkAjax(): ?string
-	{
-		if ($this->page < $this->getPaginator()->getPageCount()) {
-			return $this->link('paginate!', ['page' => $this->page + 1]);
-		}
-
-		return null;
+		return $this->link('paginate!', ['page' => $this->page + 1]);
 	}
 
 	public function handlePaginate(): void

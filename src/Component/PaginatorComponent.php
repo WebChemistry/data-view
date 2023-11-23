@@ -72,10 +72,10 @@ final class PaginatorComponent extends ComponentWithPagination
 		return null;
 	}
 
-	public function getNextLink(): ?string
+	public function getNextLink(?bool $ajax = null): ?string
 	{
 		if ($this->page < $this->getPaginator()->getPageCount()) {
-			return $this->stepLink($this->page + 1);
+			return $this->stepLink($this->page + 1, $ajax);
 		}
 
 		return null;
@@ -89,9 +89,9 @@ final class PaginatorComponent extends ComponentWithPagination
 	/**
 	 * @internal
 	 */
-	public function stepLink(int $page): string
+	public function stepLink(int $page, ?bool $ajax = null): string
 	{
-		return $this->link($this->isAjaxEnabled() ? 'paginate!' : 'this', ['page' => $page]);
+		return $this->link($ajax ?? $this->isAjaxEnabled() ? 'paginate!' : 'this', ['page' => $page]);
 	}
 
 }
