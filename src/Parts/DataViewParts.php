@@ -14,7 +14,7 @@ final class DataViewParts
 	/** @var array<string, object> */
 	private array $parts;
 
-	/** @var array<string, array<callable(object, DataViewComponent<T>=): void>> */
+	/** @var array<string, array<callable(object, DataViewComponent<T>): void>> */
 	private array $monitors = [];
 
 	/**
@@ -27,7 +27,7 @@ final class DataViewParts
 	}
 
 	/**
-	 * @param callable(object, DataViewComponent<T>=): void $callback
+	 * @param callable(object, DataViewComponent<T>): void $callback
 	 * @return self<T>
 	 */
 	public function monitor(string $name, callable $callback): self
