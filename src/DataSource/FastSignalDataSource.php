@@ -14,15 +14,20 @@ use WebChemistry\DataView\DataViewComponent;
 final class FastSignalDataSource implements DataSource
 {
 
+	/** @var string|callable(callable(string $contains): bool, string $signal): bool */
+	private $componentNameOrCallback;
+
 	/**
+	 * @param string|callable(callable(string $contains): bool): bool $componentNameOrCallback
 	 * @param DataSource<T> $dataSource
 	 */
 	public function __construct(
-		private string $componentName,
+		string|callable $componentNameOrCallback,
 		private DataSource $dataSource,
 		private bool $strict = true,
 	)
 	{
+		$this->componentNameOrCallback = $componentNameOrCallback;
 	}
 
 	/**
@@ -37,22 +42,39 @@ final class FastSignalDataSource implements DataSource
 			return $this->dataSource->getDataSet($component);
 		}
 
-		if (!$component->getComponent($this->componentName, false)) {
-			$component->onRender[] = function (DataViewComponent $component): void {
-				if (!$component->getComponent($this->componentName, false)) {
+		$componentNameOrCallback = $this->componentNameOrCallback;
+
+		if (is_string($componentNameOrCallback) && !$component->getComponent($componentNameOrCallback, false)) {
+			$component->onRender[] = function (DataViewComponent $component) use ($componentNameOrCallback): void {
+				if (!$component->getComponent($componentNameOrCallback, false)) {
 					throw new OutOfBoundsException(
-						sprintf('Component "%s" does not exist in data view required for fast signal.', $this->componentName)
+						sprintf('Component "%s" does not exist in data view required for fast signal.', $componentNameOrCallback)
 					);
 				}
 			};
 		}
 
 		if ($presenter && $presenter->isAjax()) {
-			$id = $component->getUniqueId() . $component::NAME_SEPARATOR . $this->componentName . $component::NAME_SEPARATOR;
 			$signalName = $presenter->getSignal()[0] ?? null;
 
-			if (is_string($signalName) && str_starts_with($signalName, $id)) {
-				return new ArrayDataSet(0, []);
+			if (!is_string($signalName)) {
+				return $this->dataSource->getDataSet($component);
+			}
+
+			$signalName = substr($signalName, strlen($component->getUniqueId() . $component::NAME_SEPARATOR));
+
+			if (is_string($componentNameOrCallback)) {
+				if (str_starts_with($signalName, $componentNameOrCallback . $component::NAME_SEPARATOR)) {
+					return new ArrayDataSet(0, []);
+				}
+
+			} else {
+				$components = explode($component::NAME_SEPARATOR, $signalName);
+				$contains = fn (string $name) => in_array($name, $components, true);
+
+				if (($componentNameOrCallback)($contains, $signalName)) {
+					return new ArrayDataSet(0, []);
+				}
 			}
 		}
 
