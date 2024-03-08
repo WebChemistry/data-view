@@ -14,12 +14,12 @@ use WebChemistry\DataView\DataViewComponent;
 final class DecorateDataSource implements DataSource
 {
 
-	/** @var callable(TId[] $ids): TValue[] */
+	/** @var callable(TId[] $ids, DataViewComponent<TValue> $component): TValue[] */
 	private $callback;
 
 	/**
 	 * @param DataSource<TId> $dataSource
-	 * @param callable(TId[] $ids): TValue[] $callback
+	 * @param callable(TId[] $ids, DataViewComponent<TValue> $component): TValue[] $callback
 	 */
 	public function __construct(
 		private DataSource $dataSource,
@@ -37,8 +37,8 @@ final class DecorateDataSource implements DataSource
 	{
 		return new DecorateDataSet(
 			$this->dataSource->getDataSet($component), // @phpstan-ignore-line
-			function (callable $get): array {
-				return ($this->callback)($get());
+			function (callable $get) use ($component): array {
+				return ($this->callback)($get(), $component);
 			},
 			fn (callable $get) => $get(),
 		);
