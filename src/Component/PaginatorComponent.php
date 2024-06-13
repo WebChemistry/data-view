@@ -41,7 +41,7 @@ final class PaginatorComponent extends ComponentWithPagination
 			throw new LogicException('Page count is null, item count for paginator is not set.');
 		}
 
-		$template->previousLink = $this->getPreviousLink();
+		$template->previousLink = $this->getPrevLink();
 		$template->nextLink = $this->getNextLink();
 		$template->page = $this->page;
 		$template->pageCount = $pageCount;
@@ -63,10 +63,10 @@ final class PaginatorComponent extends ComponentWithPagination
 		}
 	}
 
-	public function getPreviousLink(): ?string
+	public function getPrevLink(?bool $ajax = null): ?string
 	{
 		if ($this->page > 1) {
-			return $this->stepLink($this->page - 1);
+			return $this->stepLink($this->page - 1, $ajax);
 		}
 
 		return null;

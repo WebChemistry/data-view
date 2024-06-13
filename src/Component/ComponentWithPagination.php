@@ -116,6 +116,8 @@ abstract class ComponentWithPagination extends BaseViewComponent
 
 	abstract public function getNextLink(?bool $ajax = null): ?string;
 
+	abstract public function getPrevLink(?bool $ajax = null): ?string;
+
 	public function getPaginator(): Paginator
 	{
 		if (!isset($this->paginator)) {

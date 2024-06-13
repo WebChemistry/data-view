@@ -91,6 +91,19 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 		return $this->link('paginate!', ['page' => $this->page + 1]);
 	}
 
+	public function getPrevLink(?bool $ajax = null): ?string
+	{
+		if ($this->page <= 1) {
+			return null;
+		}
+
+		if (!$ajax) {
+			return $this->link('this', ['page' => $this->page - 1]);
+		}
+
+		return $this->link('paginate!', ['page' => $this->page - 1]);
+	}
+
 	public function handlePaginate(): void
 	{
 		/** @var Presenter $presenter */
