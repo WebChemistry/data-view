@@ -2,7 +2,9 @@
 
 namespace WebChemistry\DataView\Component\Exception;
 
-final class PaginationOutOfBoundsException extends \OutOfBoundsException
+use Nette\Application\BadRequestException;
+
+final class PaginationOutOfBoundsException extends BadRequestException
 {
 
 	public function __construct(string $message = 'Page is out of bounds.')

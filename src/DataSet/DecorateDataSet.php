@@ -54,9 +54,4 @@ final class DecorateDataSet implements DataSet
 		return ($this->countCallback)(fn () => $this->decorate->getCount());
 	}
 
-	public function hasData(): bool
-	{
-		return $this->decorate->hasData();
-	}
-
 }

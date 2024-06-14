@@ -2,12 +2,17 @@
 
 namespace WebChemistry\DataView\DI;
 
+use Nette\Application\Application;
+use Nette\Application\UI\Presenter;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\FactoryDefinition;
+use Nette\DI\Definitions\ServiceDefinition;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 use OutOfBoundsException;
 use stdClass;
+use Throwable;
+use WebChemistry\DataView\Component\Exception\PaginationOutOfBoundsException;
 use WebChemistry\DataView\Component\Factory\InfiniteScrollComponentFactory;
 use WebChemistry\DataView\Component\Factory\PaginatorComponentFactory;
 use WebChemistry\DataView\Component\InfiniteScrollComponent;
@@ -23,6 +28,7 @@ final class DataViewExtension extends CompilerExtension
 				'infiniteScroll' => Expect::structure([
 					'file' => Expect::string(),
 					'name' => Expect::string(),
+					'tag' => Expect::string()->nullable(),
 					'class' => Expect::string()->nullable(),
 					'linkClass' => Expect::string()->nullable(),
 					'caption' => Expect::string(),
@@ -53,6 +59,19 @@ final class DataViewExtension extends CompilerExtension
 		$this->setFactoryTemplate($def, $config->components->paginator, PaginatorComponent::TEMPLATES);
 	}
 
+	public function beforeCompile(): void
+	{
+		$builder = $this->getContainerBuilder();
+
+		if ($applicationName = $builder->getByType(Application::class)) {
+			$application = $builder->getDefinition($applicationName);
+
+			if ($application instanceof ServiceDefinition) {
+				$application->addSetup('?->onError[] = [?, ?]', ['@self', self::class, 'onApplicationError']);
+			}
+		}
+	}
+
 	private function processInfiniteScroll(FactoryDefinition $def, stdClass $structure): void
 	{
 		$result = $def->getResultDefinition();
@@ -67,6 +86,10 @@ final class DataViewExtension extends CompilerExtension
 
 		if (($caption = $structure->caption) !== null) {
 			$result->addSetup('setCaption', [$caption]);
+		}
+
+		if (($tag = $structure->tag) !== null) {
+			$result->addSetup('setTag', [$tag]);
 		}
 	}
 
@@ -92,6 +115,21 @@ final class DataViewExtension extends CompilerExtension
 		}
 
 		$result->addSetup('setFile', [$file]);
+	}
+
+	public static function onApplicationError(Application $application, Throwable $error): void
+	{
+		if (
+			$error instanceof PaginationOutOfBoundsException &&
+			($presenter = $application->getPresenter()) &&
+			$presenter instanceof Presenter &&
+			$presenter->isAjax()
+		) {
+			$response = $presenter->getHttpResponse();
+			$response->setCode(404);
+
+			exit;
+		}
 	}
 
 }

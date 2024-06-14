@@ -22,6 +22,4 @@ interface DataSet
 
 	public function getCount(): int;
 
-	public function hasData(): bool;
-
 }

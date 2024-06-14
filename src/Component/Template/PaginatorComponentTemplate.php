@@ -2,7 +2,6 @@
 
 namespace WebChemistry\DataView\Component\Template;
 
-use Latte\Attributes\TemplateFunction;
 use Nette\Bridges\ApplicationLatte\Template;
 use WebChemistry\DataView\Component\PaginatorComponent;
 
@@ -17,8 +16,6 @@ class PaginatorComponentTemplate extends Template
 
 	public int $page;
 
-	public int $pageCount;
-
 	/** @var int[] */
 	public array $steps;
 
@@ -28,10 +25,7 @@ class PaginatorComponentTemplate extends Template
 
 	public bool $ajax;
 
-	#[TemplateFunction]
-	public function stepLink(int $step): string
-	{
-		return $this->control->stepLink($step);
-	}
+	/** @var callable(int $page): ?string */
+	public $stepLink;
 
 }

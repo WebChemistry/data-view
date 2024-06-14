@@ -2,17 +2,17 @@
 
 namespace WebChemistry\DataView\Component;
 
-use Nette\Application\UI\Presenter;
 use WebChemistry\DataView\Component\Template\LoadMoreComponentTemplate;
 
 /**
  * @template T
- * @extends ComponentWithPagination<T>
+ * @extends BaseViewComponent<T>
  */
-final class LoadMoreComponent extends ComponentWithPagination
+final class LoadMoreComponent extends BaseViewComponent
 {
 
 	use ComponentWithPublicTemplate;
+	use PaginationComponent;
 
 	private string $caption = 'Load more';
 
@@ -20,11 +20,11 @@ final class LoadMoreComponent extends ComponentWithPagination
 
 	private ?string $linkClass = null;
 
-	public function __construct(int $itemsPerPage)
+	public function __construct()
 	{
-		parent::__construct($itemsPerPage);
-
 		$this->setFile(__DIR__ . '/templates/loadMore/default.latte');
+
+		$this->redrawOnAjax();
 	}
 
 	public function setCaption(string $caption): static
@@ -50,54 +50,18 @@ final class LoadMoreComponent extends ComponentWithPagination
 
 	public function render(): void
 	{
+		$paginator = $this->getDataView()->getPaginator();
+
 		/** @var LoadMoreComponentTemplate<T> $template */
 		$template = $this->createTemplate();
 		$template->setFile($this->getFile());
-		$template->nextLink = $this->getNextLink();
-		$template->nextLinkAjax = $this->getNextLink(true);
+		$template->nextLink = $paginator->getNextLink();
+		$template->nextLinkAjax = $paginator->getNextLink(true);
 		$template->caption = $this->caption;
 		$template->class = $this->class;
 		$template->linkClass = $this->linkClass;
 
 		$template->render();
-	}
-
-	public function getNextLink(?bool $ajax = null): ?string
-	{
-		if ($this->page >= $this->getPaginator()->getPageCount()) {
-			return null;
-		}
-
-		if (!$ajax) {
-			return $this->link('this', ['page' => $this->page + 1]);
-		}
-
-		return $this->link('paginate!', ['page' => $this->page + 1]);
-	}
-
-	public function getPrevLink(?bool $ajax = null): ?string
-	{
-		if ($this->page <= 1) {
-			return null;
-		}
-
-		if (!$ajax) {
-			return $this->link('this', ['page' => $this->page - 1]);
-		}
-
-		return $this->link('paginate!', ['page' => $this->page - 1]);
-	}
-
-	public function handlePaginate(): void
-	{
-		/** @var Presenter $presenter */
-		$presenter = $this->getPresenter();
-
-		if ($presenter->isAjax()) {
-			$this->getDataView()->requestRedraw($this);
-
-			$this->redrawControl();
-		}
 	}
 
 	public function formatTemplateClass(): string

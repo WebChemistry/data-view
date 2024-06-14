@@ -7,12 +7,13 @@ use WebChemistry\DataView\Component\Template\InfiniteScrollTemplate;
 
 /**
  * @template T
- * @extends ComponentWithPagination<T>
+ * @extends BaseViewComponent<T>
  */
-final class InfiniteScrollComponent extends ComponentWithPagination
+final class InfiniteScrollComponent extends BaseViewComponent
 {
 
 	use ComponentWithPublicTemplate;
+	use PaginationComponent;
 
 	private string $caption = 'Load more';
 
@@ -20,19 +21,26 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 
 	private ?string $linkClass = null;
 
+	private ?string $tag;
+
 	public const TEMPLATES = [
 		'default' => __DIR__ . '/templates/infiniteScroll/default.latte',
-		'stimulus' => __DIR__ . '/templates/infiniteScroll/stimulus.latte',
 	];
 
 	public function __construct(
-		int $itemsPerPage,
 		private ?int $observeOffset = null,
 	)
 	{
-		parent::__construct($itemsPerPage);
-
 		$this->setFile(self::TEMPLATES['default']);
+
+		$this->redrawOnAjax();
+	}
+
+	public function setTag(?string $tag): static
+	{
+		$this->tag = $tag;
+
+		return $this;
 	}
 
 	public function setClass(?string $class): static
@@ -65,56 +73,21 @@ final class InfiniteScrollComponent extends ComponentWithPagination
 
 	public function render(): void
 	{
+		$paginator = $this->getDataView()->getPaginator();
+
 		/** @var InfiniteScrollTemplate<T> $template */
 		$template = $this->createTemplate();
 		$template->setFile($this->getFile());
-		$template->nextLink = $this->getNextLink();
+		$template->nextLink = $paginator->getNextLink();
 		$template->offset = $this->observeOffset;
-		$template->nextLinkAjax = $this->getNextLink(true);
+		$template->nextLinkAjax = $paginator->getNextLink(true);
 		$template->caption = $this->caption;
 		$template->class = $this->class;
 		$template->linkClass = $this->linkClass;
+		$template->tag = $this->tag;
 
 		$template->render();
 	}
-
-	public function getNextLink(?bool $ajax = null): ?string
-	{
-		if ($this->page >= $this->getPaginator()->getPageCount()) {
-			return null;
-		}
-
-		if (!$ajax) {
-			return $this->link('this', ['page' => $this->page + 1]);
-		}
-
-		return $this->link('paginate!', ['page' => $this->page + 1]);
-	}
-
-	public function getPrevLink(?bool $ajax = null): ?string
-	{
-		if ($this->page <= 1) {
-			return null;
-		}
-
-		if (!$ajax) {
-			return $this->link('this', ['page' => $this->page - 1]);
-		}
-
-		return $this->link('paginate!', ['page' => $this->page - 1]);
-	}
-
-	public function handlePaginate(): void
-	{
-		/** @var Presenter $presenter */
-		$presenter = $this->getPresenter();
-
-		if ($presenter->isAjax()) {
-			$this->getDataView()->requestRedraw($this);
-
-			$this->redrawControl();
-		}
- 	}
 
 	public function formatTemplateClass(): string
 	{

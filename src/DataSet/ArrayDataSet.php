@@ -58,9 +58,4 @@ final class ArrayDataSet implements DataSet
 		return $this->count;
 	}
 
-	public function hasData(): bool
-	{
-		return $this->count > 0;
-	}
-
 }

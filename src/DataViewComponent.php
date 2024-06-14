@@ -5,7 +5,6 @@ namespace WebChemistry\DataView;
 use ArrayIterator;
 use Countable;
 use DomainException;
-use Exception;
 use Iterator;
 use IteratorAggregate;
 use LogicException;
@@ -14,11 +13,11 @@ use Nette\Application\UI\Renderable;
 use Nette\ComponentModel\IComponent;
 use Nette\Utils\Arrays;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Traversable;
-use WebChemistry\DataView\Component\ComponentWithPagination;
 use WebChemistry\DataView\Cursor\Cursor;
 use WebChemistry\DataView\DataSet\DataSet;
 use WebChemistry\DataView\DataSource\DataSource;
+use WebChemistry\DataView\Paginator\FullPaginator;
+use WebChemistry\DataView\Paginator\Paginator;
 use WebChemistry\DataView\Parts\DataViewParts;
 use WebChemistry\DataView\Render\RenderCollection;
 use WebChemistry\DataView\Template\DataViewComponentTemplate;
@@ -44,11 +43,17 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	/** @var DataViewParts<T> */
 	private DataViewParts $parts;
 
+	private Paginator $paginator;
+	
+	/** @var array<callable(DataViewComponent<T>): void> */
+	private array $dependencies = [];
+
 	/**
 	 * @param DataSource<T> $dataSource
 	 */
 	public function __construct(
 		protected DataSource $dataSource,
+		?Paginator $paginator = null,
 	)
 	{
 		if (class_exists(EventDispatcher::class)) {
@@ -56,6 +61,25 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		}
 
 		$this->parts = new DataViewParts($this);
+		$this->paginator = $paginator ?? new FullPaginator();
+
+		$this->addComponent($this->paginator, 'paginator');
+		
+		$this->onAnchor[] = function (): void {
+			foreach ($this->dependencies as $dependency) {
+				$dependency($this);
+			}
+		};
+	}
+
+	/**
+	 * @param callable(DataViewComponent<T> $component): void $callback
+	 */
+	public function addDependency(callable $callback): static
+	{
+		$this->dependencies[] = $callback;
+ 		
+		return $this;
 	}
 
 	public function getEventDispatcher(): EventDispatcher
@@ -65,6 +89,11 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		}
 
 		return $this->eventDispatcher;
+	}
+
+	public function getPaginator(): Paginator
+	{
+		return $this->paginator;
 	}
 
 	/**
@@ -85,7 +114,7 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 
 	public function hasData(): bool
 	{
-		return $this->getDataSet()->hasData();
+		return count($this->getDataSet()->getData($this->createCursor())) > 0;
 	}
 
 	/**
@@ -109,9 +138,9 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		return $this->getDataSet()->getIterable($this->createCursor());
 	}
 
-	private function createCursor(): ?Cursor
+	private function createCursor(): Cursor
 	{
-		return $this->getOptionalComponentByClass(ComponentWithPagination::class)?->createCursor();
+		return $this->paginator->createCurrentCursor();
 	}
 
 	/**
@@ -190,14 +219,6 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		}
 
 		return $object;
-	}
-
-	/**
-	 * @return ComponentWithPagination<T>
-	 */
-	public function getPaginationComponent(): ComponentWithPagination
-	{
-		return $this->getComponentByClass(ComponentWithPagination::class);
 	}
 
 	/**

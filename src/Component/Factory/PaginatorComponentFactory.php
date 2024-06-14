@@ -13,6 +13,6 @@ interface PaginatorComponentFactory
 	/**
 	 * @return PaginatorComponent<T>
 	 */
-	public function create(int $itemsPerPage): PaginatorComponent;
+	public function create(): PaginatorComponent;
 
 }

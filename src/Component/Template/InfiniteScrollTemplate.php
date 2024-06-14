@@ -26,4 +26,6 @@ final class InfiniteScrollTemplate extends Template
 
 	public ?int $offset;
 
+	public ?string $tag;
+
 }

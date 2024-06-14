@@ -86,9 +86,4 @@ final class CacheableDataSet implements DataSet
 		return $this->count = $this->dataSet->getCount();
 	}
 
-	public function hasData(): bool
-	{
-		return $this->getCount() > 0;
-	}
-
 }

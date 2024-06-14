@@ -1,61 +1,42 @@
 <?php declare(strict_types = 1);
 
-namespace WebChemistry\DataView\Component;
+namespace WebChemistry\DataView\Paginator;
 
 use Nette\Application\Attributes\Persistent;
+use Nette\Application\UI\Presenter;
 use Nette\Utils\Paginator;
-use WebChemistry\DataView\Component\Exception\PaginationOutOfBoundsException;
 use WebChemistry\DataView\Cursor\Cursor;
 use WebChemistry\DataView\Cursor\LimitCursor;
 use WebChemistry\DataView\Cursor\OffsetCursor;
-use WebChemistry\DataView\Paginator\PaginatorStepper;
 use WebChemistry\DataView\Utility\PaginatorFactory;
 
 /**
  * @template T
- * @extends BaseViewComponent<T>
+ * @extends BasePaginator<T>
  */
-abstract class ComponentWithPagination extends BaseViewComponent
+final class OffsetPaginator extends BasePaginator
 {
 
 	#[Persistent]
 	public int $page = 1;
-
-	private Paginator $paginator;
-
-	/** @var int<1, max>[] */
-	private array $steps;
-
-	private PaginatorStepper $stepper;
 
 	/** @var int<0, max>|null */
 	private ?int $offset = null;
 
 	private bool $computing = false;
 
-	private bool $strictOutOfBounds = false;
-
-	/** @var list<callable(): void> */
-	public array $onOutOfBounds = [];
+	private Paginator $paginator;
 
 	/**
-	 * @param int<1, max> $itemsPerPage
+	 * @param int<0, max> $itemsPerPage
 	 */
 	public function __construct(
-		protected int $itemsPerPage,
+		private int $itemsPerPage,
 	)
 	{
-		$this->stepper = new PaginatorStepper();
 	}
 
-	public function setStrictOutOfBounds(bool $strictOutOfBounds = true): static
-	{
-		$this->strictOutOfBounds = $strictOutOfBounds;
-
-		return $this;
-	}
-
-	public function createCursor(): Cursor
+	public function createCurrentCursor(): Cursor
 	{
 		$offset = $this->getOffset();
 
@@ -114,11 +95,41 @@ abstract class ComponentWithPagination extends BaseViewComponent
 		return $this->getPaginator()->getPageCount() ?? 1;
 	}
 
-	abstract public function getNextLink(?bool $ajax = null): ?string;
+	public function getNextLink(bool $ajax = false): ?string
+	{
+		if ($this->page >= $this->getPaginator()->getPageCount()) {
+			return null;
+		}
 
-	abstract public function getPrevLink(?bool $ajax = null): ?string;
+		if (!$ajax) {
+			return $this->link('this', ['page' => $this->page + 1]);
+		}
 
-	public function getPaginator(): Paginator
+		return $this->link('paginate!', ['page' => $this->page + 1]);
+	}
+
+	/**
+	 * @internal
+	 */
+	public function getLink(int $page, bool $ajax = false): string
+	{
+		return $this->link($ajax ? 'paginate!' : 'this', ['page' => $page]);
+	}
+
+	public function getPrevLink(bool $ajax = false): ?string
+	{
+		if ($this->page <= 1) {
+			return null;
+		}
+
+		if (!$ajax) {
+			return $this->link('this', ['page' => $this->page - 1]);
+		}
+
+		return $this->link('paginate!', ['page' => $this->page - 1]);
+	}
+
+	private function getPaginator(): Paginator
 	{
 		if (!isset($this->paginator)) {
 			$dataView = $this->getDataView();
@@ -144,23 +155,7 @@ abstract class ComponentWithPagination extends BaseViewComponent
 	 */
 	public function getSteps(): array
 	{
-		return $this->steps ??= $this->stepper->getSteps($this->getPaginator());
-	}
-
-	public function getStepper(): PaginatorStepper
-	{
-		return $this->stepper;
-	}
-
-	protected function outOfBoundsDetected(): void
-	{
-		foreach ($this->onOutOfBounds as $callback) {
-			$callback();
-		}
-
-		if ($this->strictOutOfBounds) {
-			throw new PaginationOutOfBoundsException();
-		}
+		return (new PaginatorStepper())->getSteps($this->getPaginator());
 	}
 
 }

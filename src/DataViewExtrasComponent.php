@@ -5,6 +5,7 @@ namespace WebChemistry\DataView;
 use WebChemistry\DataView\DataSource\DataSource;
 use WebChemistry\DataView\Extras\Extras;
 use WebChemistry\DataView\Extras\ExtrasFactory;
+use WebChemistry\DataView\Paginator\Paginator;
 
 /**
  * @template TItem
@@ -24,9 +25,10 @@ final class DataViewExtrasComponent extends DataViewComponent
 	public function __construct(
 		DataSource $dataSource,
 		private ExtrasFactory $extrasFactory,
+		?Paginator $paginator = null,
 	)
 	{
-		parent::__construct($dataSource);
+		parent::__construct($dataSource, $paginator);
 	}
 
 	/**

@@ -5,26 +5,29 @@ namespace WebChemistry\DataView\Component;
 use LogicException;
 use Nette\Application\UI\Presenter;
 use WebChemistry\DataView\Component\Template\PaginatorComponentTemplate;
+use WebChemistry\DataView\Paginator\OffsetPaginator;
+use WebChemistry\DataView\Paginator\PaginatorStepper;
 
 /**
  * @template T
- * @extends ComponentWithPagination<T>
+ * @extends BaseViewComponent<T>
  */
-final class PaginatorComponent extends ComponentWithPagination
+final class PaginatorComponent extends BaseViewComponent
 {
 
 	use ComponentWithAjax;
 	use ComponentWithPublicTemplate;
+	use PaginationComponent;
 
 	public const TEMPLATES = [
 		'default' => __DIR__ . '/templates/paginator/default.latte',
 	];
 
-	public function __construct(int $itemsPerPage)
+	public function __construct()
 	{
-		parent::__construct($itemsPerPage);
-
 		$this->setFile(self::TEMPLATES['default']);
+
+		$this->redrawOnAjax();
 	}
 
 	public function render(): void
@@ -33,65 +36,25 @@ final class PaginatorComponent extends ComponentWithPagination
 		$template = $this->createTemplate();
 		$template->setFile($this->getFile());
 
-		$paginator = $this->getPaginator();
+		$paginator = $this->getDataView()->getPaginator();
 
-		$pageCount = $paginator->getPageCount();
-
-		if ($pageCount === null) {
-			throw new LogicException('Page count is null, item count for paginator is not set.');
+		if (!$paginator instanceof OffsetPaginator) {
+			throw new LogicException(sprintf('Paginator must be instance of %s, %s given.', OffsetPaginator::class, get_debug_type($paginator)));
 		}
 
-		$template->previousLink = $this->getPrevLink();
-		$template->nextLink = $this->getNextLink();
-		$template->page = $this->page;
-		$template->pageCount = $pageCount;
-		$template->steps = $this->getSteps();
+		$template->previousLink = $paginator->getPrevLink($this->isAjaxEnabled());
+		$template->nextLink = $paginator->getNextLink($this->isAjaxEnabled());
+		$template->page = $paginator->page;
+		$template->steps = $paginator->getSteps();
 		$template->ajax = $this->isAjaxEnabled();
+		$template->stepLink = fn (int $page) => $paginator->getLink($page, $this->isAjaxEnabled());
 
 		$template->render();
-	}
-
-	public function handlePaginate(): void
-	{
-		/** @var Presenter $presenter */
-		$presenter = $this->getPresenter();
-
-		if ($presenter->isAjax()) {
-			$this->getDataView()->requestRedraw($this);
-
-			$this->redrawControl();
-		}
-	}
-
-	public function getPrevLink(?bool $ajax = null): ?string
-	{
-		if ($this->page > 1) {
-			return $this->stepLink($this->page - 1, $ajax);
-		}
-
-		return null;
-	}
-
-	public function getNextLink(?bool $ajax = null): ?string
-	{
-		if ($this->page < $this->getPaginator()->getPageCount()) {
-			return $this->stepLink($this->page + 1, $ajax);
-		}
-
-		return null;
 	}
 
 	public function formatTemplateClass(): string
 	{
 		return PaginatorComponentTemplate::class;
-	}
-
-	/**
-	 * @internal
-	 */
-	public function stepLink(int $page, ?bool $ajax = null): string
-	{
-		return $this->link($ajax ?? $this->isAjaxEnabled() ? 'paginate!' : 'this', ['page' => $page]);
 	}
 
 }

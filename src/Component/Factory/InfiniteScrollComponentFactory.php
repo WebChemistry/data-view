@@ -13,6 +13,6 @@ interface InfiniteScrollComponentFactory
 	/**
 	 * @return InfiniteScrollComponent<T>
 	 */
-	public function create(int $itemsPerPage): InfiniteScrollComponent;
+	public function create(): InfiniteScrollComponent;
 
 }

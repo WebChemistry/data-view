@@ -24,7 +24,7 @@ final class FastSignalDataSource implements DataSource
 	public function __construct(
 		string|callable $componentNameOrCallback,
 		private DataSource $dataSource,
-		private bool $strict = true,
+		private bool $strict = false,
 	)
 	{
 		$this->componentNameOrCallback = $componentNameOrCallback;

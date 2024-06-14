@@ -4,6 +4,7 @@ namespace WebChemistry\DataView\Render;
 
 use LogicException;
 use Nette\Application\UI\Renderable;
+use WebChemistry\DataView\Component\LogicViewComponent;
 
 final class RenderCollection
 {
@@ -20,11 +21,15 @@ final class RenderCollection
 	/**
 	 * @return iterable<int, Renderable>
 	 */
-	public function getSortedCollectors(): iterable
+	public function getSortedCollectors(bool $skipLogicComponents = true): iterable
 	{
 		$priority = [];
 
 		foreach ($this->controls as $control) {
+			if ($skipLogicComponents && $control instanceof LogicViewComponent) {
+				continue;
+			}
+
 			if ($control instanceof RenderWithPriority) {
 				$priority[self::validatePriority($control->getRenderPriority(), $control)][] = $control;
 			} else {

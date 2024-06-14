@@ -3,11 +3,15 @@
 namespace WebChemistry\DataView\DataSet;
 
 use ArrayIterator;
+use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use InvalidArgumentException;
+use LogicException;
 use WebChemistry\DataView\Cursor\Cursor;
 use WebChemistry\DataView\Cursor\LimitCursor;
 use WebChemistry\DataView\Cursor\OffsetCursor;
+use WebChemistry\DataView\Cursor\PointCursor;
 
 /**
  * @template TValue
@@ -16,13 +20,22 @@ use WebChemistry\DataView\Cursor\OffsetCursor;
 final class DoctrineDataSet implements DataSet
 {
 
+	/** @var (callable(Cursor $cursor, QueryBuilder $qb): void)|null */
+	private $onCursor;
+
+	private bool $compositeId;
+
 	/**
-	 * @param Paginator<TValue> $paginator
+	 * @param mixed[] $options
+	 * @param (callable(Cursor $cursor, QueryBuilder $qb): void)|null $onCursor
 	 */
 	public function __construct(
-		private Paginator $paginator,
+		private QueryBuilder $queryBuilder,
+		private array $options = [],
+		?callable $onCursor = null,
 	)
 	{
+		$this->onCursor = $onCursor;
 	}
 
 	/**
@@ -36,18 +49,29 @@ final class DoctrineDataSet implements DataSet
 		if ($cursor instanceof OffsetCursor) {
 			$offset = $cursor->getOffset();
 
+		} else if ($cursor instanceof PointCursor) {
+			if (!$this->onCursor) {
+				throw new LogicException(sprintf('%s requires onCursor callback', PointCursor::class));
+			}
+
 		} else if (!$cursor instanceof LimitCursor && $cursor !== null) {
 			throw new InvalidArgumentException(
-				sprintf('Cursor must be instance of %s or %s', OffsetCursor::class, LimitCursor::class)
+				sprintf('Cursor must be instance of %s', implode('|', [OffsetCursor::class, LimitCursor::class, PointCursor::class]))
 			);
 
 		}
 
-		$this->paginator->getQuery()
+		if ($cursor && ($callback = $this->onCursor)) {
+			$callback($cursor, $this->queryBuilder);
+		}
+
+		$paginator = $this->createPaginator();
+
+		$paginator->getQuery()
 			->setFirstResult($offset)
 			->setMaxResults($limit);
 
-		return $this->paginator->getIterator();
+		return $paginator->getIterator();
 	}
 
 	/**
@@ -60,12 +84,42 @@ final class DoctrineDataSet implements DataSet
 
 	public function getCount(): int
 	{
-		return $this->paginator->count();
+		return $this->createPaginator()->count();
 	}
 
-	public function hasData(): bool
+	/**
+	 * @return Paginator<TValue>
+	 */
+	protected function createPaginator(): Paginator
 	{
-		return $this->paginator->count() > 0;
+		/** @phpstan-var string|AbstractQuery::HYDRATE_* $hydrateMode */
+		$hydrateMode = $this->options['hydrationMode'];
+
+		$query = $this->queryBuilder->getQuery()
+			->setHydrationMode($hydrateMode);
+
+		$fetchJoinCollection = $this->options['fetchJoinCollection'] === null ? !$this->isCompositeId() :
+			(bool) $this->options['fetchJoinCollection'];
+
+		return (new Paginator($query, $fetchJoinCollection))
+			->setUseOutputWalkers((bool) $this->options['outputWalkers']);
+	}
+
+	protected function isCompositeId(): bool
+	{
+		if (!isset($this->compositeId)) {
+			$this->compositeId = false;
+
+			foreach ($this->queryBuilder->getRootEntities() as $entity) {
+				if ($this->queryBuilder->getEntityManager()->getClassMetadata($entity)->isIdentifierComposite) {
+					$this->compositeId = true;
+
+					break;
+				}
+			}
+		}
+
+		return $this->compositeId;
 	}
 
 }

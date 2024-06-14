@@ -8,7 +8,7 @@
 			</a>
 		</li>
 		<li n:foreach="$steps as $step" n:class="$step === $page ? active">
-			<a n:class="$ajax ? ajax" href="{stepLink($step)}">{$step}</a>
+			<a n:class="$ajax ? ajax" href="{$stepLink($step)}">{$step}</a>
 		</li>
 		<li n:class="!$nextLink ? disabled">
 			<a n:attr="href => $nextLink" n:class="$ajax ? ajax" rel="next" aria-label="Next">
