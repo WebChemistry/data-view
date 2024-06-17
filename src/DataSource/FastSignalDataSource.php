@@ -5,6 +5,7 @@ namespace WebChemistry\DataView\DataSource;
 use OutOfBoundsException;
 use WebChemistry\DataView\DataSet\ArrayDataSet;
 use WebChemistry\DataView\DataSet\DataSet;
+use WebChemistry\DataView\DataSet\EmptyDataSet;
 use WebChemistry\DataView\DataViewComponent;
 
 /**
@@ -65,7 +66,7 @@ final class FastSignalDataSource implements DataSource
 
 			if (is_string($componentNameOrCallback)) {
 				if (str_starts_with($signalName, $componentNameOrCallback . $component::NAME_SEPARATOR)) {
-					return new ArrayDataSet(0, []);
+					return new EmptyDataSet(); // @phpstan-ignore-line
 				}
 
 			} else {
@@ -73,7 +74,7 @@ final class FastSignalDataSource implements DataSource
 				$contains = fn (string $name) => in_array($name, $components, true);
 
 				if (($componentNameOrCallback)($contains, $signalName)) {
-					return new ArrayDataSet(0, []);
+					return new EmptyDataSet(); // @phpstan-ignore-line
 				}
 			}
 		}
