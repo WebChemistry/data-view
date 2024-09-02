@@ -256,7 +256,7 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	{
 		if (!$components) {
 			/** @var Iterator<int, Renderable> $components */
-			$components = $this->getComponents(filterType: Renderable::class);
+			$components = $this->getComponents(Renderable::class);
 
 			yield from (new RenderCollection($components))->getSortedCollectors();
 		} else {
