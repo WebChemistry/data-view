@@ -43,6 +43,10 @@ final class DataSourceFacade implements DataSource
 		$this->fastSignal = $fastSignal;
 	}
 
+	/**
+	 * @param DataViewComponent<T> $component
+	 * @return DataSet<T>
+	 */
 	public function getDataSet(DataViewComponent $component): DataSet
 	{
 		if (!isset($this->dataSource)) {
@@ -80,6 +84,7 @@ final class DataSourceFacade implements DataSource
 			$this->dataSource = $dataSource;
 		}
 
+		/** @var DataSet<T> */
 		return $this->dataSource->getDataSet($component);
 	}
 
