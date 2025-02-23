@@ -8,7 +8,6 @@ use DomainException;
 use Iterator;
 use IteratorAggregate;
 use LogicException;
-use Nette\Application\BadRequestException;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Renderable;
 use Nette\ComponentModel\IComponent;
@@ -262,8 +261,6 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 				foreach ($components as $component) {
 					if ($component instanceof Control || method_exists($component, 'render')) {
 						yield $component;
-					} else {
-						throw new BadRequestException(sprintf('Component %s is not renderable.', $component::class));
 					}
 				}
 			};
