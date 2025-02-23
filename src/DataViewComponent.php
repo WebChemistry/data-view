@@ -8,6 +8,7 @@ use DomainException;
 use Iterator;
 use IteratorAggregate;
 use LogicException;
+use Nette\Application\BadRequestException;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Renderable;
 use Nette\ComponentModel\IComponent;
@@ -44,7 +45,7 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	private DataViewParts $parts;
 
 	private Paginator $paginator;
-	
+
 	/** @var array<callable(DataViewComponent<T>): void> */
 	private array $dependencies = [];
 
@@ -64,7 +65,7 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		$this->paginator = $paginator ?? new FullPaginator();
 
 		$this->addComponent($this->paginator, 'paginator');
-		
+
 		$this->onAnchor[] = function (): void {
 			foreach ($this->dependencies as $dependency) {
 				$dependency($this);
@@ -78,7 +79,7 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 	public function addDependency(callable $callback): static
 	{
 		$this->dependencies[] = $callback;
- 		
+
 		return $this;
 	}
 
@@ -257,8 +258,17 @@ class DataViewComponent extends Control implements IteratorAggregate, Countable
 		if (!$components) {
 			/** @var Iterator<int, Renderable> $components */
 			$components = $this->getComponents(Renderable::class);
+			$filter = static function (iterable $components): iterable {
+				foreach ($components as $component) {
+					if ($component instanceof Control || method_exists($component, 'render')) {
+						yield $component;
+					} else {
+						throw new BadRequestException(sprintf('Component %s is not renderable.', $component::class));
+					}
+				}
+			};
 
-			yield from (new RenderCollection($components))->getSortedCollectors();
+			yield from (new RenderCollection($filter($components)))->getSortedCollectors(); // @phpstan-ignore-line
 		} else {
 			foreach ($components as $name) {
 				/** @var IComponent $component */
